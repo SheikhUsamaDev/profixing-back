@@ -21,7 +21,17 @@ Links.post("/", async (req, res, next) => {
         if (err) {
           res.status(400).json(err);
         } else {
-          res.json(userData);
+          const token = jwt.sign(
+            { _id: userData._id },
+            process.env.JWT_SECRET,
+            {
+              expiresIn: "2h",
+            }
+          );
+          res.json({
+            userData,
+            token,
+          });
         }
       });
     }
@@ -29,38 +39,30 @@ Links.post("/", async (req, res, next) => {
     res.status(500).json(e);
   }
 });
-
 Links.post("/login", async (req, res, next) => {
-
-  if (!req.body.email || !req.body.password) {
-    res.status(404).json("Empty");
-    return;
-  }
-  const user = await User.findOne({ email: req.body.email }).select(
-    "+password"
-  );
-
-  if (user !== null) {
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(400).json("User Not Found");
+    }
+    const user = await User.findOne({ email: req.body.email }).select("+password");
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "2h",
     });
-    if (req.body.password !== user.password) {
-      res.status(400).json("password not Match")
-      return;
+    if (user !== null) {
+      if (req.body.password !== user.password) {
+        res.status(400).json("password not Match");
+      } else {
+        res.json({
+          user,
+          token,
+        });
+      }
     } else {
-      res.status(200).json({
-        user,
-        token,
-      });
-      return;
+      res.status(400).json("User Not Found");
     }
-  } else {
-    res.status(400).json("User Not Found");
-    return;
+  } catch (e) {
+    res.status(500).json(e);
   }
-
-
-
 });
 Links.get("/logout", async (req, res, next) => {
   try {
@@ -72,7 +74,6 @@ Links.get("/logout", async (req, res, next) => {
       success: true,
       message: "Log Out succees",
     });
-
   } catch (e) {
     res.status(500).json(e);
   }

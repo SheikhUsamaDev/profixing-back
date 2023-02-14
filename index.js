@@ -16,18 +16,11 @@ const offers = require("./Routes/offers");
 var cors = require("cors");
 App.use(cors());
 App.use(cookieParser());
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then((err, connection) => {
-    console.log("DB CONNECTED");
-  });
+mongoose.connect("mongodb+srv://Rizwan:Rizwanmirza1@cluster0.lv75msq.mongodb.net/profixingDB?retryWrites=true&w=majority").then(console.log("Your Connection is Successful"));
 if (process.env.NODE_ENV !== "PRODUCTION") {
   require("dotenv").config({ path: "./server/config/.env" });
 }
-const PORT =  process.env.PORT || 4600;
+const PORT = 8080 || process.env.PORT;
 App.use(express.json());
 App.use(
   bodyParser.urlencoded({

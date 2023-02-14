@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  username: {
+  serviceName: {
     type: String,
     required: true,
   },
@@ -10,14 +10,6 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   time: {
-    type: String,
-    required: true,
-  },
-  instruction: {
-    type: String,
-    required: true,
-  },
-  duration: {
     type: String,
     required: true,
   },
@@ -35,6 +27,18 @@ const orderSchema = new mongoose.Schema({
   },
   location: {
     address: {
+      type: String,
+      required: true,
+    },
+    villNumber: {
+      type: Number,
+      required: true,
+    },
+    street: {
+      type: String,
+      required: true,
+    },
+    building: {
       type: String,
       required: true,
     },
@@ -56,7 +60,11 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   furnished: {
-    type: String,
+    type: Boolean,
+    required: true,
+  },
+  onSurvey: {
+    type: Boolean,
     required: true,
   },
 });
