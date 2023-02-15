@@ -16,10 +16,9 @@ const offers = require("./Routes/offers");
 var cors = require("cors");
 App.use(cors());
 App.use(cookieParser());
-mongoose.connect(process.env.MONGO_URI).then(console.log("Your Connection is Successful"));
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  require("dotenv").config({ path: "./server/config/.env" });
-}
+mongoose.connect(uri).then(console.log("Your Connection is Successful"));
+require("dotenv").config();
+
 const PORT = process.env.PORT || 8080;
 App.use(express.json());
 App.use(

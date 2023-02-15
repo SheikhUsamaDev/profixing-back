@@ -21,6 +21,10 @@ const userSchema = new schema({
     type: String,
     default: "user",
   },
+  otp: {
+    type: Number,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("user", userSchema);

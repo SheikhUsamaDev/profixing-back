@@ -5,32 +5,64 @@ const User = require("../model/usermodel");
 const sendTokens = require("../utils/jwttoken");
 const jwt = require("jsonwebtoken");
 const error = require("../middleware/error");
-const sendEmail = require("../utils/sendemail");
+const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
 // const sendToken = require("../utils/jwttoken");
 // const isauthantication = require("../middleware/authentication");
+
+var mailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "profixinga@gmail.com",
+    pass: "qmgxaqqspysldqet",
+  },
+});
 Links.post("/", async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
       res.status(401).json("user already exist");
     } else {
-      const newUser = new User(req.body);
+      const newUser = new User({
+        email: req.body.email,
+        password: req.body.password,
+        otp: Math.floor(1000 + Math.random() * 9000),
+      });
       newUser.save((err, userData) => {
         if (err) {
-          res.status(400).json(err);
+          res.status(400).json("user not created");
         } else {
           const token = jwt.sign(
             { _id: userData._id },
-            process.env.JWT_SECRET,
+            process.env.SECRET_KEY,
             {
               expiresIn: "2h",
             }
           );
-          res.json({
-            userData,
-            token,
+          let userEmail = {
+            from: "profixinga@gmail.com",
+            to: userData.email,
+            subject: "OTP for Signup",
+            text: "Your OTP",
+            html: `<!DOCTYPE html>
+<html lang="en">
+  <body>
+   <h3>Your OTP is Here</h3>
+   <h1>${userData.otp}</h1>
+  </body>
+</html>
+`,
+          };
+
+          console.log(userEmail);
+          mailTransporter.sendMail(userEmail, function (err, data) {
+            if (err) {
+              res.status(400).json("Email not sent");
+            } else {
+              if (data !== null) {
+                res.json({ userData, token });
+              }
+            }
           });
         }
       });
@@ -39,16 +71,84 @@ Links.post("/", async (req, res, next) => {
     res.status(500).json(e);
   }
 });
+Links.post("/otp", async (req, res) => {
+  try {
+    User.findOne({
+      email: req.body.email,
+      otp: req.body.otp,
+    }).exec((err, data) => {
+      if (err) {
+        res.status(400).json("Please enter correct OTP");
+      } else {
+        if (data !== null || data !== undefined) {
+          res.json("SuccessFully Signup");
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+Links.put("/updatePassword", (req, res) => {
+  console.log(req.body);
+  try {
+    User.findOneAndUpdate(
+      { email: req.body.email },
+      {
+        $set: req.body,
+      },
+      {
+        new: true,
+        userFindAndModify: false,
+      },
+      (err, data) => {
+        if (err) return res.status(400).json(err);
+        else {
+          let userEmail = {
+            from: "profixinga@gmail.com",
+            to: data.email,
+            subject: "OTP for Signup",
+            text: "Your OTP",
+            html: `<!DOCTYPE html>
+<html lang="en">
+  <body>
+   <h3>Your OTP is Here</h3>
+   <h1>${data.otp}</h1>
+  </body>
+</html>
+`,
+          };
+
+          console.log(userEmail);
+          mailTransporter.sendMail(userEmail, function (err, data1) {
+            if (err) {
+              res.status(400).json("Email not sent");
+            } else {
+              if (data1 !== null) {
+                res.json("email sent successfully");
+              }
+            }
+          });
+        }
+      }
+    );
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+});
 Links.post("/login", async (req, res, next) => {
   try {
     if (!req.body.email || !req.body.password) {
       res.status(400).json("User Not Found");
     }
-    const user = await User.findOne({ email: req.body.email }).select("+password");
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
+    const user = await User.findOne({ email: req.body.email }).select(
+      "+password"
+    );
+
     if (user !== null) {
+      const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {
+        expiresIn: "2h",
+      });
       if (req.body.password !== user.password) {
         res.status(400).json("password not Match");
       } else {
