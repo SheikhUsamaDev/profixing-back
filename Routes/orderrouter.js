@@ -48,7 +48,7 @@ Route.get("/orders/me", isauthantication, async (req, res, next) => {
   }
 });
 // get all Orders -- Admin
-Route.get("/admin/orders", async (req, res, next) => {
+Route.post("/admin/orders", async (req, res, next) => {
   console.log(req.body)
   try {
     const orders = await Order.find();
