@@ -30,7 +30,7 @@ exports.createOrders = async (req, res, next) => {
   try {
     const order = new Order({
       date: req.body.date,
-      time: req.body.time,
+      time: Date.now(),
       onSurvey: req.body.onSurvey,
       units: req.body.units,
       subTotal: req.body.subTotal,
