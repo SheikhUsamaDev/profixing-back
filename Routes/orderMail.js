@@ -80,7 +80,7 @@ Route.post("/SndEmail", createOrders, (req, res, next) => {
           {
             timeZone: "Asia/Karachi",
           }
-        )}  ${req.body.time} </div>
+        )}  ${Date.now()} </div>
       </div>
       <div class="data-container">
         <div class="data-head">Instructions</div>
