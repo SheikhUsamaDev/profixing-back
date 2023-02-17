@@ -22,6 +22,7 @@ Links.post("/", async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
       res.status(401).json("user already exist");
+      return;
     } else {
       const newUser = new User({
         email: req.body.email,
@@ -31,6 +32,7 @@ Links.post("/", async (req, res, next) => {
       newUser.save((err, userData) => {
         if (err) {
           res.status(400).json("user not created");
+          return;
         } else {
           const token = jwt.sign(
             { _id: userData._id },
@@ -45,13 +47,13 @@ Links.post("/", async (req, res, next) => {
             subject: "OTP for Signup",
             text: "Your OTP",
             html: `<!DOCTYPE html>
-<html lang="en">
-  <body>
-   <h3>Your OTP is Here</h3>
-   <h1>${userData.otp}</h1>
-  </body>
-</html>
-`,
+                <html lang="en">
+                  <body>
+                   <h3>Your OTP is Here</h3>
+                   <h1>${userData.otp}</h1>
+                  </body>
+                </html>
+                `,
           };
 
           console.log(userEmail);
@@ -78,7 +80,13 @@ Links.post("/otp", async (req, res) => {
       otp: req.body.otp,
     }).exec((err, data) => {
       if (err) {
-        res.status(400).json("Please enter correct OTP");
+        User.findOneAndDelete({ email: req.body.email }).exec((err, user) => {
+          if (err) {
+            res.status(400).json("user not delete");
+          } else {
+            res.status(400).json("Please enter correct OTP");
+          }
+        });
       } else {
         if (data !== null || data !== undefined) {
           res.json("SuccessFully Signup");
