@@ -90,6 +90,8 @@ Links.post("/otp", async (req, res) => {
       } else {
         if (data !== null || data !== undefined) {
           res.json("SuccessFully Signup");
+        } else {
+          res.status(400).json("Please enter correct OTP");
         }
       }
     });
