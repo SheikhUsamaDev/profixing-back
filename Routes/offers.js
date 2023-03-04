@@ -2,32 +2,14 @@ const express = require("express");
 const { isauthantication } = require("../middleware/authentication");
 const Route = express.Router();
 const Offer = require("../model/offers");
-
-Route.post("/create", isauthantication, (req, res, next) => {
-  try {
-    const newOffer = new Offer({
-      name: req.body.name,
-      price: req.body.price,
-      date: req.body.date,
-      detail: {
-        callout: req.body.detail.callout,
-        ac: req.body.detail.ac,
-        plumbing: req.body.detail.plumbing,
-        electrical: req.body.detail.electrical,
-        handyman: req.body.detail.handyman,
-        spareParts: req.body.detail.spareParts,
-      },
-    });
-    newOffer.save((err, offer) => {
-      if (err) {
-        res.status(400).json(err);
-      } else {
-        res.json(offer);
-      }
-    });
-  } catch (e) {
-    return res.status(500).json(e);
-  }
+const nodemailer = require("nodemailer");
+const createOffer = require("../middleware/authentication");
+var mailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "profixinga@gmail.com",
+    pass: "qmgxaqqspysldqet",
+  },
 });
 Route.post("/getByName", isauthantication, (req, res) => {
   try {
@@ -69,7 +51,7 @@ Route.delete("/:id/deleteOffers", isauthantication, (req, res) => {
   }
 });
 Route.put("/:id/updateOffers", isauthantication, (req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   try {
     Offer.findOneAndUpdate(
       { _id: req.params._id },
@@ -88,6 +70,45 @@ Route.put("/:id/updateOffers", isauthantication, (req, res) => {
   } catch (error) {
     return res.status(500).json(error);
   }
+});
+
+Route.post("/create", isauthantication, createOffer, (req, res, next) => {
+  let userEmail = {
+    from: req.body.from,
+    to: "profixinga@gmail.com",
+    subject: "Offer Selected By User",
+    text: `Offer Selected by this User is ${req.offers.name}`,
+  };
+
+  console.log(userEmail);
+  mailTransporter.sendMail(userEmail, function (err, data) {
+    if (err) {
+      res.status(400).json(err);
+    } else {
+      if (data !== null) {
+        res.json(req.offers);
+      }
+    }
+  });
+});
+Route.post("/contactMail", (req, res, next) => {
+  let userEmail = {
+    from: req.body.email,
+    to: "profixinga@gmail.com",
+    subject: "Contact Mail by User",
+    text: `User Name ${req.body.name}  Email of User ${req.body.email}  Number of User ${req.body.contact}  Address Of User ${req.body.address}  text by User ${req.body.text}`,
+  };
+
+  console.log(userEmail);
+  mailTransporter.sendMail(userEmail, function (err, data) {
+    if (err) {
+      res.status(400).json("Email not Sent");
+    } else {
+      if (data !== null) {
+        res.json("Email Sent SuccessFully");
+      }
+    }
+  });
 });
 
 module.exports = Route;
