@@ -3,7 +3,7 @@ const { isauthantication } = require("../middleware/authentication");
 const Route = express.Router();
 const Offer = require("../model/offers");
 const nodemailer = require("nodemailer");
-const createOffer = require("../middleware/authentication");
+const {createOffer} = require("../middleware/authentication");
 var mailTransporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
