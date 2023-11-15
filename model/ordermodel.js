@@ -14,8 +14,7 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   units: {
-    type: Number,
-    required: true,
+    type: Number
   },
   subTotal: {
     type: Number,
